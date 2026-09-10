@@ -23,7 +23,6 @@ const BLOCKS: Block[] = [
   { type: 'video', label: 'Vídeo', cat: 'media', glyph: '▶', icon: 'video', defaults: () => ({ label: 'Vídeo', media_id: null, caption: '' }) },
   { type: 'audio', label: 'Áudio gravado', cat: 'media', glyph: '♪', icon: 'mic', defaults: () => ({ label: 'Áudio', media_id: null }) },
   { type: 'document', label: 'Documento', cat: 'media', glyph: '▤', icon: 'file', defaults: () => ({ label: 'Documento', media_id: null, caption: '', filename: '' }) },
-  { type: 'view_once', label: 'Visualização única', cat: 'media', glyph: '1', disabled: true, tip: 'A Cloud API não envia visualização única', defaults: () => ({}) },
   { type: 'delay', label: 'Aguardar', cat: 'flow', glyph: '⏱', defaults: () => ({ label: 'Aguardar', seconds: 300 }) },
   { type: 'wait_reply', label: 'Esperar resposta', cat: 'flow', glyph: '✎', defaults: () => ({ label: 'Esperar resposta', timeout_seconds: 7200, save_as: 'resposta' }) },
   { type: 'goto_funnel', label: 'Ir para outro funil', cat: 'flow', glyph: '⇄', defaults: () => ({ label: 'Ir para funil', funnel_id: null }) },
@@ -58,7 +57,7 @@ const tplVarIdx = (t: any) => { const s = new Set<string>(); for (const m of tpl
 const fillTpl = (t: any, values: any) => tplBody(t).replace(/\{\{(\d+)\}\}/g, (_: string, n: string) => values?.[n] || `{{${n}}}`)
 
 // ---------- contexto compartilhado com os nós ----------
-type Ctx = { templates: any[]; media: any[]; funnels: any[]; stats: Record<string, number> }
+type Ctx = { templates: any[]; media: any[]; funnels: any[]; stats: Record<string, number>; description?: string; setDescription?: (v: string) => void }
 const BuilderCtx = createContext<Ctx>({ templates: [], media: [], funnels: [], stats: {} })
 
 // ---------- nó customizado ----------
@@ -76,7 +75,7 @@ function BlockNode({ id, type, data, selected }: NodeProps) {
 
   switch (type) {
     case 'trigger':
-      body = <>Ponto de entrada do funil.<br /><span style={{ fontSize: 11.5 }}>As regras de disparo (7 min, valor mínimo, cooldown…) ficam na <b style={{ color: 'var(--mint)' }}>Automação</b>.</span></>
+      body = <>{d.entry === 'session' ? <><b style={{ color: 'var(--mint)' }}>Cliente escreveu primeiro</b><br /><span style={{ fontSize: 11.5 }}>Janela aberta: pode começar com texto, áudio ou botões.</span></> : <><b style={{ color: 'var(--mint)' }}>Orion inicia a conversa</b><br /><span style={{ fontSize: 11.5 }}>Primeiro envio precisa ser um template aprovado.</span></>}<br /><span style={{ fontSize: 11.5 }}>As regras de disparo ficam na <b style={{ color: 'var(--mint)' }}>Automação</b>.</span></>
       break
     case 'template': {
       const t = ctx.templates.find(x => x.id === d.template_id)
@@ -253,7 +252,16 @@ function Props({ node, update, vars, ctx, reloadMedia, onDuplicate, onRemove }: 
   let body: React.ReactNode
   switch (node.type) {
     case 'trigger':
-      body = <div className="fb-info">Este é o ponto de partida. Quem decide <b>quando</b> o funil dispara (Pix gerado, 7 minutos de espera, valor mínimo, cooldown, horário) é a <b>Automação</b>. Conecte a saída verde ao primeiro bloco.</div>
+      body = <>
+        <Field label="Quem começa a conversa" hint={d.entry === 'session' ? 'Use para Lead do anúncio ou Novo contato: o cliente já escreveu, a janela de 24h (72h vindo de anúncio) está aberta e qualquer bloco pode ser o primeiro.' : 'Use para Pix gerado, compra aprovada, campanhas: o cliente não escreveu, então a Meta só aceita template aprovado como primeiro envio.'}>
+          <select className="sel" value={d.entry || 'template'} onChange={e => update({ entry: e.target.value })}>
+            <option value="template">Orion inicia (precisa de template)</option>
+            <option value="session">Cliente escreveu primeiro (janela aberta)</option>
+          </select>
+        </Field>
+        <Field label="Descrição do funil" hint="Aparece na lista de funis."><textarea className="ta" style={{ minHeight: 70 }} value={ctx.description || ''} placeholder="Para que serve este funil?" onChange={e => ctx.setDescription?.(e.target.value)} /></Field>
+        <div className="fb-info">Quem decide <b>quando</b> o funil dispara (Pix gerado, 7 minutos de espera, valor mínimo, cooldown, horário) é a <b>Automação</b>. Conecte a saída verde ao primeiro bloco.</div>
+      </>
       break
     case 'template': {
       const approved = ctx.templates.filter(t => t.status === 'APPROVED')
@@ -296,6 +304,7 @@ function Props({ node, update, vars, ctx, reloadMedia, onDuplicate, onRemove }: 
         <Field label="Mensagem"><VarInput multiline value={d.text} vars={vars} emoji max={4096} placeholder="Escreva a mensagem. Use {{primeiro_nome}} para personalizar." onChange={v => update({ text: v })} /></Field>
         <Field label="Prévia"><div className={'fb-preview' + (preview ? '' : ' dim')}>{preview || 'A prévia aparece aqui'}</div></Field>
         <Toggle on={!!d.preview_url} onChange={v => update({ preview_url: v })} label="Mostrar prévia de links" />
+        <div className="fb-info" style={{ marginTop: 10 }}><b>Código Pix:</b> a Meta não tem botão de copiar para textos longos (o botão "Copiar código" só aceita até 15 caracteres, em template). Mande o código sozinho numa mensagem só com <code>{'{{pix_copia_cola}}'}</code>: o cliente segura e copia, como nos bancos.</div>
       </>
       break
     case 'buttons':
@@ -439,7 +448,7 @@ function Builder() {
       const ns = (f.nodes || []).map((n: any) => ({ ...n, type: n.type || 'text', deletable: n.type !== 'trigger', data: n.data || {} }))
       const es = (f.edges || []).map((e: any) => ({ ...e, type: 'del', markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--line2)' } }))
       setNodes(ns); setEdges(es)
-      lastSaved.current = JSON.stringify({ n: cleanNodes(ns), e: cleanEdges(es), name: f.name })
+      lastSaved.current = JSON.stringify({ n: cleanNodes(ns), e: cleanEdges(es), name: f.name, description: f.description })
       const st: Record<string, number> = {}
       for (const s of f.node_stats || []) if (s.current_node) st[s.current_node] = (st[s.current_node] || 0) + Number(s.c || 0)
       setStats(st)
@@ -469,14 +478,14 @@ function Builder() {
 
   useEffect(() => {
     if (!loaded.current) return
-    const snap = JSON.stringify({ n: cleanNodes(nodes), e: cleanEdges(edges), name: funnel?.name })
+    const snap = JSON.stringify({ n: cleanNodes(nodes), e: cleanEdges(edges), name: funnel?.name, description: funnel?.description })
     if (snap === lastSaved.current) return
     lastSaved.current = snap
     dirty.current = true; setSaveState('dirty')
     clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => save(), 1500)
     return () => clearTimeout(saveTimer.current)
-  }, [nodes, edges, funnel?.name])
+  }, [nodes, edges, funnel?.name, funnel?.description])
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); save() } }
@@ -522,6 +531,7 @@ function Builder() {
   // primeiro bloco após o gatilho precisa ser template
   const needsTemplate = useMemo(() => {
     const trig = nodes.find(n => n.type === 'trigger'); if (!trig) return false
+    if ((trig.data as any)?.entry === 'session') return false
     let cur: Node | undefined = trig; let guard = 0
     while (cur && guard++ < 12) {
       const e = edges.find(x => x.source === cur!.id && (!x.sourceHandle || x.sourceHandle === 'default' || x.sourceHandle === 'yes'))
@@ -578,7 +588,7 @@ function Builder() {
         </tbody></table>}
     </div> :
 
-    <div className="fb">
+    <div className={'fb' + (selected ? ' has-props' : '')}>
       <div className="fb-blocks">
         {CATS.map(c => <React.Fragment key={c.key}>
           <div className="lbl">{c.label}</div>
@@ -606,16 +616,10 @@ function Builder() {
         </BuilderCtx.Provider>
       </div>
 
-      <div className="fb-props">
-        {needsTemplate && <div className="fb-warn"><b>Primeiro envio precisa ser um Template</b>Fora da janela de 24h a Meta só aceita template aprovado. O primeiro envio do funil precisa ser um Template.</div>}
-        {selected ? <Props key={selected.id} node={selected} ctx={ctx} vars={vars} reloadMedia={reloadMedia} update={p => updateNode(selected.id, p)} onDuplicate={() => duplicateNode(selected)} onRemove={() => removeNode(selected)} /> :
-          <>
-            <h4>Funil</h4>
-            <Field label="Descrição" hint="Aparece na lista de funis."><textarea className="ta" style={{ minHeight: 70 }} value={funnel.description || ''} placeholder="Para que serve este funil?" onChange={e => setFunnel((f: any) => ({ ...f, description: e.target.value }))} onBlur={() => save()} /></Field>
-            <div className="fb-info">Clique em um bloco no canvas para editar o conteúdo dele aqui.<br /><br /><b>Blocos:</b> {nodes.length - 1} · <b>Conexões:</b> {edges.length}</div>
-            <div className="fb-info">Dica: comece com <b>Template aprovado</b>, depois <b>Esperar resposta</b> e, na saída “Respondeu”, use <b>Texto</b>, <b>Botões</b> ou <b>Áudio</b> livremente — a janela de 24h já está aberta.</div>
-          </>}
-      </div>
+      {selected && <div className="fb-props">
+        {needsTemplate && <div className="fb-warn"><b>Primeiro envio precisa ser um Template</b>Fora da janela de 24h a Meta só aceita template aprovado. Se o cliente escreveu primeiro, mude "Quem começa a conversa" no bloco Gatilho.</div>}
+        <Props key={selected.id} node={selected} ctx={{ ...ctx, description: funnel.description, setDescription: (v: string) => setFunnel((f: any) => ({ ...f, description: v })) }} vars={vars} reloadMedia={reloadMedia} update={p => updateNode(selected.id, p)} onDuplicate={() => duplicateNode(selected)} onRemove={() => removeNode(selected)} />
+      </div>}
     </div>}
 
     {testOpen && <Modal title="Testar no meu número" onClose={() => setTestOpen(false)}

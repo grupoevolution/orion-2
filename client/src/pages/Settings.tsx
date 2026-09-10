@@ -55,7 +55,15 @@ function Rules() {
 function Integrations() {
   const { toast } = useToast()
   const [env, setEnv] = useState<any>(null)
-  useEffect(() => { api.get('/settings/env').then(setEnv).catch((e: any) => toast(e.message, true)) }, [])
+  const [meta, setMeta] = useState({ app_id: '', app_secret: '', verify_token: '' })
+  const [saving, setSaving] = useState(false)
+  const load = () => api.get('/settings/env').then(e => { setEnv(e); setMeta(m => ({ ...m, app_id: e.meta_app_id || '', verify_token: e.meta_verify_token || '' })) }).catch((e: any) => toast(e.message, true))
+  useEffect(() => { load() }, [])
+  const saveMeta = async () => {
+    setSaving(true)
+    try { await api.put('/settings/meta', { app_id: meta.app_id, verify_token: meta.verify_token, ...(meta.app_secret ? { app_secret: meta.app_secret } : {}) }); setMeta(m => ({ ...m, app_secret: '' })); await load(); toast('App da Meta salvo') }
+    catch (e: any) { toast(e.message, true) } finally { setSaving(false) }
+  }
   if (!env) return <div className="empty"><Spinner /></div>
   const Block = ({ label, value }: { label: string; value?: string }) => <Field label={label}>{value ? <div className="code-block"><span>{value}</span><CopyButton text={value} /></div> : <div className="code-block"><span className="dim">não definido no .env</span></div>}</Field>
   return <div className="grid g2">
@@ -72,7 +80,14 @@ function Integrations() {
     <div className="card">
       <div className="h"><div><h3>Meta / WhatsApp Cloud API</h3><p>Mensagens recebidas, status de entrega, aprovação de templates e qualidade</p></div><Pill kind={env.has_app_secret ? 'ok' : 'warn'}>{env.has_app_secret ? 'App secret ok' : 'Sem app secret'}</Pill></div>
       <Block label="URL de callback" value={env.webhook_meta} />
-      <Block label="Token de verificação" value={env.meta_verify_token} />
+      <div className="grid g2" style={{ gap: 10 }}>
+        <Field label="ID do app" hint="Meta for Developers → seu app → Configurações → Básico"><input className="inp" value={meta.app_id} placeholder="123456789012345" onChange={e => setMeta({ ...meta, app_id: e.target.value })} /></Field>
+        <Field label="Token de verificação" hint="Você escolhe. Cole o mesmo valor no webhook da Meta."><input className="inp" value={meta.verify_token} onChange={e => setMeta({ ...meta, verify_token: e.target.value })} /></Field>
+      </div>
+      <Field label="Chave secreta do app (App Secret)" hint={env.has_app_secret ? `Salva e criptografada (${env.app_secret_masked}). Preencha só para trocar.` : 'Configurações → Básico → Chave secreta do app. Valida que os webhooks vieram mesmo da Meta.'}>
+        <input className="inp" type="password" value={meta.app_secret} placeholder={env.has_app_secret ? '••••••••' : 'cole a chave secreta'} onChange={e => setMeta({ ...meta, app_secret: e.target.value })} autoComplete="new-password" />
+      </Field>
+      <div className="row" style={{ marginBottom: 12 }}><button className="btn p" onClick={saveMeta} disabled={saving}>{saving ? 'Salvando…' : 'Salvar app da Meta'}</button><span className="dim" style={{ fontSize: 12 }}>Um app só, para todos os números e WABAs. Contas de anúncio não entram aqui.</span></div>
       <ol className="muted" style={{ fontSize: 12.5, paddingLeft: 18, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
         <li>Em <b>Meta for Developers → seu app → WhatsApp → Configuração</b>, edite o Webhook.</li>
         <li>Cole a URL de callback e o token de verificação e clique em Verificar e salvar.</li>

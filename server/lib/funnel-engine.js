@@ -270,7 +270,7 @@ export function validateFunnel(funnel) {
   if (trig.length === 1) {
     const first = nextNodeStatic(nodes, edges, trig[0].id)
     if (!first) errors.push('Conecte o gatilho ao primeiro bloco.')
-    else if (!['template', 'condition', 'set_var', 'tag', 'delay'].includes(first.type) && funnel.requires_template !== false)
+    else if (!['template', 'condition', 'set_var', 'tag', 'delay'].includes(first.type) && (trig[0].data?.entry || 'template') !== 'session')
       errors.push('Fora da janela de 24h a Meta só aceita template: o primeiro envio precisa ser um bloco "Template aprovado".')
   }
   for (const n of nodes) {

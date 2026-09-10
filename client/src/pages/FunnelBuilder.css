@@ -1,5 +1,5 @@
 /* Construtor de funil — layout 3 colunas + visual dos nós do React Flow */
-.fb{display:grid;grid-template-columns:230px 1fr 300px;gap:12px;height:calc(100vh - 92px);min-height:560px}
+.fb{display:grid;grid-template-columns:230px 1fr;gap:12px;height:calc(100vh - 92px);min-height:560px}
 .fb-top{margin-bottom:12px}
 .fb-name{font-family:var(--font-d);font-weight:700;font-size:20px;letter-spacing:-.02em;background:none;border:1px solid transparent;border-radius:8px;padding:2px 8px;margin-left:-8px;min-width:200px;max-width:460px}
 .fb-name:hover{border-color:var(--line)}
@@ -120,4 +120,5 @@
 
 /* execuções */
 .fb-runs{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;height:calc(100vh - 92px);overflow:auto}
-@media (max-width:1100px){.fb{grid-template-columns:1fr}.fb-blocks,.fb-props{display:none}}
+.fb.has-props{grid-template-columns:230px 1fr 300px}
+@media (max-width:1100px){.fb,.fb.has-props{grid-template-columns:1fr}.fb-blocks,.fb-props{display:none}}

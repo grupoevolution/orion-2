@@ -18,6 +18,8 @@ import { normalizePhone } from '../lib/phone.js'
 import { sseHandler } from '../lib/bus.js'
 import { enqueue, JOBS } from '../lib/queue.js'
 import { statsRouter } from './stats.js'
+import { metaSecrets } from '../meta/webhook.js'
+import { encrypt, mask } from '../lib/crypto.js'
 
 export const router = Router()
 const UPLOAD_DIR = () => process.env.UPLOAD_DIR || './uploads'
@@ -48,10 +50,24 @@ router.post('/tools/render', wrap(async (req, res) => {
 // ---------- settings ----------
 router.get('/settings', wrap(async (req, res) => { const rows = await all('SELECT key, value FROM settings'); res.json(Object.fromEntries(rows.map(r => [r.key, r.value]))) }))
 router.put('/settings', wrap(async (req, res) => { for (const [k, v] of Object.entries(req.body || {})) await setSetting(k, v); res.json({ ok: true }) }))
-router.get('/settings/env', (req, res) => res.json({
-  public_url: process.env.PUBLIC_URL, meta_verify_token: process.env.META_VERIFY_TOKEN, has_app_secret: !!process.env.META_APP_SECRET,
-  has_kirvano_token: !!process.env.KIRVANO_TOKEN, graph_version: process.env.META_GRAPH_VERSION,
-  webhook_meta: `${process.env.PUBLIC_URL}/webhook/meta`, webhook_kirvano: `${process.env.PUBLIC_URL}/webhook/kirvano`
+router.get('/settings/env', wrap(async (req, res) => {
+  const m = await metaSecrets()
+  res.json({
+    public_url: process.env.PUBLIC_URL, meta_verify_token: m.verify_token, has_app_secret: !!m.app_secret, app_secret_masked: m.app_secret ? mask(m.app_secret) : '', meta_app_id: m.app_id,
+    has_kirvano_token: !!process.env.KIRVANO_TOKEN, graph_version: process.env.META_GRAPH_VERSION,
+    webhook_meta: `${process.env.PUBLIC_URL}/webhook/meta`, webhook_kirvano: `${process.env.PUBLIC_URL}/webhook/kirvano`
+  })
+}))
+// App da Meta: secret (criptografado), verify token e app id ficam no banco; .env é só fallback
+router.put('/settings/meta', wrap(async (req, res) => {
+  const cur = (await getSetting('meta_app', {})) || {}
+  const next = { ...cur }
+  if (req.body.app_secret != null && req.body.app_secret !== '') next.app_secret_enc = encrypt(String(req.body.app_secret).trim())
+  if (req.body.app_secret === '') delete next.app_secret_enc
+  if (req.body.verify_token != null) next.verify_token = String(req.body.verify_token).trim()
+  if (req.body.app_id != null) next.app_id = String(req.body.app_id).trim()
+  await setSetting('meta_app', next)
+  res.json({ ok: true })
 }))
 
 // ---------- numbers ----------
@@ -124,8 +140,8 @@ router.delete('/templates/:id', wrap(async (req, res) => {
 }))
 router.post('/templates/header-upload', upload.single('file'), wrap(async (req, res) => {
   const n = req.body.number_id ? await numbers.getNumber(req.body.number_id) : (await numbers.listNumbers())[0]
-  const appId = process.env.META_APP_ID
-  if (!appId) throw new Error('defina META_APP_ID no .env para enviar header de mídia')
+  const appId = (await metaSecrets()).app_id
+  if (!appId) throw new Error('informe o ID do app da Meta em Configurações → Integrações para enviar header de mídia')
   const h = await meta.uploadTemplateHeader(meta.tokenOf(n), appId, req.file.path, req.file.mimetype)
   res.json({ handle: h })
 }))

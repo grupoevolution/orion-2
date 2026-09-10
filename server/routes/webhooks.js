@@ -21,13 +21,14 @@ router.post('/kirvano', async (req, res) => {
   }
 })
 
-router.get('/meta', (req, res) => {
-  if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === process.env.META_VERIFY_TOKEN) return res.status(200).send(req.query['hub.challenge'])
+router.get('/meta', async (req, res) => {
+  const { verify_token } = await metaHook.metaSecrets()
+  if (req.query['hub.mode'] === 'subscribe' && verify_token && req.query['hub.verify_token'] === verify_token) return res.status(200).send(req.query['hub.challenge'])
   res.sendStatus(403)
 })
 
 router.post('/meta', async (req, res) => {
-  if (!metaHook.verifySignature(req.rawBody || '', req.headers['x-hub-signature-256'])) { await log('meta', req, 'ignored', 'assinatura inválida'); return res.sendStatus(401) }
+  if (!(await metaHook.verifySignature(req.rawBody || '', req.headers['x-hub-signature-256']))) { await log('meta', req, 'ignored', 'assinatura inválida'); return res.sendStatus(401) }
   res.sendStatus(200)   // a Meta exige resposta rápida
   try { await metaHook.handle(req.body); } catch (e) { console.error('[meta]', e); await log('meta', req, 'error', e.message) }
 })

@@ -1,6 +1,6 @@
 // Receptor do webhook da Meta: mensagens, status de entrega, qualidade e templates
 import { one, q, getSetting } from '../db/index.js'
-import { hmacSha256 } from '../lib/crypto.js'
+import { hmacSha256, decrypt } from '../lib/crypto.js'
 import { upsertContact, openWindow, ensureConversation, setOwner, getContact } from '../lib/contacts.js'
 import { getNumberByPhoneId, bumpDaily, syncNumber } from '../lib/numbers.js'
 import { onInboundReply } from '../lib/funnel-engine.js'
@@ -8,8 +8,13 @@ import { dispatch } from '../lib/automations.js'
 import { enqueue, JOBS } from '../lib/queue.js'
 import { bus } from '../lib/bus.js'
 
-export function verifySignature(rawBody, header) {
-  const secret = process.env.META_APP_SECRET
+export async function metaSecrets() {
+  const s = await getSetting('meta_app', {}) || {}
+  return { app_secret: s.app_secret_enc ? decrypt(s.app_secret_enc) : (process.env.META_APP_SECRET || ''), verify_token: s.verify_token || process.env.META_VERIFY_TOKEN || '', app_id: s.app_id || process.env.META_APP_ID || '' }
+}
+
+export async function verifySignature(rawBody, header) {
+  const { app_secret: secret } = await metaSecrets()
   if (!secret) return true
   if (!header?.startsWith('sha256=')) return false
   const expected = hmacSha256(secret, rawBody)
