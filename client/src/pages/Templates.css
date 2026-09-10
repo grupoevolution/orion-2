@@ -1,0 +1,23 @@
+/* Templates — formulário + prévia estilo WhatsApp */
+.tpl-form{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
+.tpl-form .side{position:sticky;top:0;background:none;border:0;padding:0;height:auto}
+.wa-bg{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px 12px;min-height:200px;background-image:radial-gradient(circle,var(--line) 1px,transparent 1px);background-size:18px 18px}
+.wa-bubble{background:var(--panel2);border:1px solid var(--line2);border-radius:10px;border-top-left-radius:2px;padding:8px 10px;max-width:100%;font-size:13px;line-height:1.45;white-space:pre-wrap;word-break:break-word;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.wa-bubble .hdr{font-weight:700;margin-bottom:4px}
+.wa-bubble .media{background:var(--bg2);border-radius:6px;height:110px;display:grid;place-items:center;color:var(--dim);font-size:12px;margin-bottom:6px;gap:4px}
+.wa-bubble .ftr{color:var(--dim);font-size:11.5px;margin-top:4px}
+.wa-bubble .time{text-align:right;font-size:10px;color:var(--dim);font-family:var(--font-m);margin-top:2px}
+.wa-bubble .var{color:var(--lime);font-family:var(--font-m);font-size:12px}
+.wa-btns{display:flex;flex-direction:column;gap:3px;margin-top:3px}
+.wa-btns span{background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:7px;text-align:center;color:var(--info);font-size:13px;font-weight:500}
+.tpl-vars{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.tpl-var{display:grid;grid-template-columns:52px 1fr 1fr auto;gap:6px;align-items:center}
+.tpl-var .idx{font-family:var(--font-m);font-size:12px;color:var(--lime)}
+.tpl-btn-row{display:grid;grid-template-columns:130px 1fr 1fr auto;gap:6px;align-items:center;margin-bottom:6px}
+.cat-check{border-radius:8px;padding:8px 10px;font-size:12px;margin-top:-6px;margin-bottom:12px;border:1px solid}
+.cat-check.ok{background:rgba(46,204,113,.08);border-color:rgba(46,204,113,.25);color:var(--green)}
+.cat-check.warn{background:rgba(245,182,66,.08);border-color:rgba(245,182,66,.3);color:var(--warn)}
+.tpl-preview-cell{color:var(--muted);max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px}
+.tpl-reject{font-size:11.5px;color:var(--crit);margin-top:2px}
+.tpl-detail{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start}
+@media (max-width:1100px){.tpl-form,.tpl-detail{grid-template-columns:1fr}}

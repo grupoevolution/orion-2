@@ -1,0 +1,35 @@
+/* Campanhas — cards, progresso e wizard */
+:root{--bubble-out:#1f5a38}
+.camp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px}
+.camp{display:flex;flex-direction:column;gap:10px}
+.camp .h{margin-bottom:0}
+.camp .h h3{font-size:15px}
+.camp .kind{font-size:12px;color:var(--muted);margin-top:2px}
+.camp .kind b{color:var(--text);font-weight:500}
+.camp .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;font-size:11px;color:var(--muted)}
+.camp .stats div b{display:block;font-family:var(--font-m);font-size:13px;color:var(--text);font-weight:500}
+.camp .rate{font-size:11.5px;color:var(--dim);display:flex;gap:12px;flex-wrap:wrap}
+.camp .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:6px;border-top:1px solid var(--line)}
+.camp .acts .sp{margin-left:auto}
+.steps{display:flex;gap:4px;margin-bottom:16px;font-size:12px;color:var(--dim)}
+.steps span{flex:1;text-align:center;padding:6px 4px;border-bottom:2px solid var(--line)}
+.steps span.on{color:var(--text);border-bottom-color:var(--green)}
+.steps span.done{color:var(--green)}
+.tpl-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow:auto}
+.tpl-item{background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:9px 12px;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:10px;color:inherit}
+.tpl-item:hover{border-color:var(--line2)}
+.tpl-item.on{border-color:var(--green2)}
+.tpl-item small{color:var(--muted);display:block;font-size:11.5px}
+.tpl-prev{background:var(--bubble-out);border-radius:12px;padding:10px 12px;font-size:13.5px;white-space:pre-wrap;line-height:1.45}
+.notice{background:rgba(245,182,66,.08);border:1px solid rgba(245,182,66,.25);color:var(--warn);border-radius:9px;padding:8px 12px;font-size:12.5px;margin-bottom:12px}
+.notice.i{background:rgba(90,180,255,.08);border-color:rgba(90,180,255,.25);color:var(--info)}
+.review{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}
+.review span{color:var(--muted)}
+.pick{max-height:280px;overflow:auto;border:1px solid var(--line);border-radius:9px}
+.pick label{display:flex;gap:10px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);cursor:pointer;font-size:13px}
+.pick label:last-child{border-bottom:0}
+.pick label:hover{background:var(--panel2)}
+.pick label small{color:var(--dim);font-family:var(--font-m);margin-left:auto}
+.camp-detail-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.camp-detail-stats .kpi{padding:10px 12px 8px}
+.camp-detail-stats .kpi .v{font-size:20px;margin-top:2px}

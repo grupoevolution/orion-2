@@ -1,0 +1,24 @@
+/* Dashboard — layout dos cards e funil de barras */
+.dash-grid2{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-bottom:12px}
+.dash-grid2.even{grid-template-columns:1fr 1fr}
+.dash-chart{height:210px}
+.dash-legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:8px}
+.dash-legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.funil{display:flex;flex-direction:column;gap:9px}
+.frow{display:grid;grid-template-columns:150px 1fr 64px 52px;gap:12px;align-items:center;font-size:13px}
+.frow .bar{height:22px;background:var(--bg2);border-radius:6px;overflow:hidden}
+.frow .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green2),var(--green));border-radius:6px;transition:width .3s}
+.frow .bar i.soft{opacity:.5}
+.frow .bar i.mint{background:var(--mint)}
+.frow .n{font-family:var(--font-m);text-align:right;font-variant-numeric:tabular-nums}
+.frow .p{color:var(--muted);font-family:var(--font-m);font-size:12px;text-align:right}
+.dash-tip{background:var(--panel2);border:1px solid var(--line2);border-radius:9px;padding:8px 12px;font-size:12px;box-shadow:var(--shadow)}
+.dash-tip b{display:block;font-family:var(--font-m);color:var(--muted);font-weight:500;margin-bottom:4px}
+.dash-tip span{display:block}
+.act-list{display:flex;flex-direction:column}
+.act-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.act-row:last-child{border-bottom:0}
+.act-row .t{font-size:12px;color:var(--muted);white-space:nowrap}
+.act-row .who{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act-row .who small{color:var(--dim);margin-left:6px}
+@media (max-width:1100px){.dash-grid2,.dash-grid2.even{grid-template-columns:1fr}}

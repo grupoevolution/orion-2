@@ -1,0 +1,26 @@
+/* Números — cards de número e fluxo de conexão */
+.num-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:12px}
+.num-card .top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+.num-card .name{font-family:var(--font-d);font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
+.num-card .phone{font-family:var(--font-m);font-size:12.5px;color:var(--muted)}
+.num-card .meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.num-card .usage{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);margin:10px 0}
+.num-card .chart{height:80px;margin:8px 0 6px}
+.num-card .actions{display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--line);padding-top:10px;margin-top:6px}
+.num-card .err{font-size:12px;color:var(--crit);background:rgba(239,91,91,.08);border:1px solid rgba(239,91,91,.25);border-radius:8px;padding:6px 10px;margin:6px 0}
+.num-steps{display:flex;flex-direction:column;gap:14px}
+.num-step{display:flex;gap:12px}
+.num-step i{width:24px;height:24px;border-radius:50%;background:var(--panel2);border:1px solid var(--line2);display:grid;place-items:center;font-style:normal;font-size:12px;font-family:var(--font-m);color:var(--mint);flex:none}
+.num-step.done i{background:var(--green);color:#062012;border-color:var(--green)}
+.num-step > div{flex:1;min-width:0}
+.phone-opt{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg2);cursor:pointer;margin-bottom:6px}
+.phone-opt.on{border-color:var(--green2);background:var(--panel2)}
+.phone-opt input{accent-color:var(--green)}
+.help-box{border:1px solid var(--line);border-radius:9px;background:var(--bg2);margin-top:10px}
+.help-box summary{padding:9px 12px;cursor:pointer;font-weight:600;font-size:13px;color:var(--muted);list-style:none;display:flex;align-items:center;gap:8px}
+.help-box summary::-webkit-details-marker{display:none}
+.help-box[open] summary{color:var(--text);border-bottom:1px solid var(--line)}
+.help-box .body{padding:12px;font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:10px}
+.help-box .body b{color:var(--text)}
+.help-box ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.num-tip{background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:6px 10px;font-size:11px;font-family:var(--font-m)}

@@ -1,0 +1,33 @@
+{
+  "name": "orion-2",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Orion 2.0 — automação e atendimento WhatsApp via Cloud API oficial",
+  "main": "server/index.js",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "db:migrate": "node server/db/migrate.js",
+    "client:dev": "npm --prefix client run dev",
+    "client:build": "npm --prefix client run build",
+    "build": "npm --prefix client install && npm --prefix client run build",
+    "seed:demo": "node server/db/seed-demo.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.12.0",
+    "pg-boss": "^10.1.5",
+    "csv-parse": "^5.5.6",
+    "zod": "^3.23.8"
+  }
+}
